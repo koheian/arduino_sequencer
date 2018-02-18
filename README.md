@@ -1,2 +1,4 @@
 # arduino_sequencer
-comments are written in Japanese.
+Comments in source files are written in Japanese.
+## Overview
+A music sequencer which works on Arduino.
