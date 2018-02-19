@@ -24,7 +24,22 @@ _mobileBB shield for Mozzi_ のライセンスは以下です（[https://github.
 >
 >Copyright by The Breadboard Band 2013 - 2014
 
-## License
-This work is under The MIT License (see [LICENSE](./LICENSE) for detail).
+### Components
+When you make without _mobileBB shield for Mozzi_, you need:
+- tactile switch, 4 units
+- potentiometer, 1 unit
 
-MIT Licenseを使用しています（詳細は[LICENSE](./LICENSE)を参照）。
+_mobileBB shield for Mozzi_ を使用しない場合、必要なもの：
+- タクタイルスイッチ × 4
+- 可変抵抗 × 1
+
+Below is optional whether you use _mobileBB shield for Mozzi_ or not:
+- high power Red Green & Blue LED, 1 unit
+
+_mobileBB shield for Mozzi_ に関係なく、あってもなくても良いもの：
+- パワーフルカラーLED × 1
+
+## License
+This work is under The MIT License (see [./LICENSE](./LICENSE) for detail).
+
+MIT Licenseを使用しています（詳細は[./LICENSE](./LICENSE)を参照）。
