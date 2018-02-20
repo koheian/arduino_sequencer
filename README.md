@@ -39,6 +39,16 @@ Below is optional whether you use _mobileBB shield for Mozzi_ or not:
 _mobileBB shield for Mozzi_ に関係なく、あってもなくても良いもの：
 - パワーフルカラーLED × 1
 
+### How to Make The Circuit
+- Connect digital input pin No. 2, 3, 4 and 5 to tactile switches respectively. Connent each of them to a 5 V power source pin.
+- デジタルインプットピン2, 3, 4, 5それぞれにタクタイルスイッチを接続し、5 Vの電源ピンに接続します。
+- Connect analog input pin No. 1 to a potentiometer and a 5 V power source pin.
+- アナログインプットピン1を可変抵抗、5 V電源ピンに接続します。
+- Connect digital output pin No. 6, 7 and 8 to LEDs respectively, which are not high power LEDs.
+- デジタルアウトプットピン6, 7, 8をそれぞれLEDに接続します。ここでのLEDはパワーLEDではありません。
+- Connect digital output pin No. 9, 10 and 12 to a high power LED to assign red, green and blue to each pin.
+- デジタルアウトプットピン9, 10, 12をそれぞれパワーLEDに接続します。このとき、それぞれのピンにred, green, blueを割り当てるようにします。
+
 ## License
 This work is under The MIT License (see [./LICENSE](./LICENSE) for detail).
 
