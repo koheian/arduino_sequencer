@@ -2,7 +2,7 @@
  * ボタンを長押ししたときに録音モードに入る。
  * 
  * ループ再生は常にさせる。
- * 信号の出力は12ピン。
+ * 信号の出力は11ピン。
  * 録音モード終了と同時にループを更新する。
  * 
  * テンポと音符が来るたびにそれぞれLEDを光らせている。
@@ -29,6 +29,7 @@
  * analogReadの値を8で割るとちょうどいいだろう。
  * だから、NUMBER_OF_NOTES_IN_A_BARは固定（１小節に32個の音符）。length_of_a_bar_timeを可変にする。
  * 具体的には、length_of_a_bar_time = analogRead(可変抵抗) / TEMPO_ADJUST * NUMBER_OF_NOTES_IN_A_BAR にする。
+ * 
  */
  
 #include <Metro.h>
@@ -39,7 +40,7 @@
 #define NUMBER_OF_NOTES_IN_A_BAR 32      //1小節での音符の数
 #define TEMPO_ADJUST 9 //length_of_a_bar_timeの取得時に、1024をいい感じにスケール変更するための値
 
-//////// ピン番号たち ////////(pin11はfast PWMに使われている)
+//////// ピン番号たち ////////
 // input
 #define P_LENGTH_OF_A_BAR_TIME 1  //length_of_a_bar_timeを決めるためのアナログピン番号
 #define P_KICK_BUTTON          5  //kickボタン
@@ -53,7 +54,7 @@
 #define P_POWER_LED_KICK       9  //kickのパワーLEDを光らせるピン番号
 #define P_POWER_LED_SNARE     10  //snareのパワーLEDを光らせるピン番号
 #define P_POWER_LED_HIGHHAT   12  //highhatのパワーLEDを光らせるピン番号
-
+// pin11はfast PWM（信号出力）に使われている
 
 Metro tempo, note;   //テンポ、音符の間隔
 
