@@ -53,3 +53,11 @@ _mobileBB shield for Mozzi_ に関係なく、あってもなくても良いも�
 This work is under The MIT License (see [./LICENSE](./LICENSE) for detail).
 
 MIT Licenseを使用しています（詳細は[./LICENSE](./LICENSE)を参照）。
+
+## Changes
+### Version 2 (2018-
+* 機能追加
+    * 音程の種類を3種類から4種類に増やしました。
+
+### Version 1 (2018-05-27)
+* release
