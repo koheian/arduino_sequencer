@@ -16,7 +16,7 @@
  * 録音モードのLEDの光り方のバグを直す。
  * 
  * pitchについて
- * kick:21, snare:73, highhat:255
+ * kick:21, snare:73, highhat:140, part4:255
  * 
  * 何かしらの音がなっているとき、パワーLEDを光らせる。
  * 
@@ -28,7 +28,8 @@
  * analogReadの範囲は0~1024。note当たりの長さを最大で128くらいにするのがちょうどいいので、
  * analogReadの値を8で割るとちょうどいいだろう。
  * だから、NUMBER_OF_NOTES_IN_A_BARは固定（１小節に32個の音符）。length_of_a_bar_timeを可変にする。
- * 具体的には、length_of_a_bar_time = analogRead(可変抵抗) / TEMPO_ADJUST * NUMBER_OF_NOTES_IN_A_BAR にする。
+ * 具体的には、length_of_a_note_time = analogRead(可変抵抗) / TEMPO_ADJUSTにし、
+ * length_of_a_bar_time = length_of_a_note_time * NUMBER_OF_NOTES_IN_A_BARにする。
  * 
  */
  
@@ -38,34 +39,35 @@
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))  //PWM用
 
 #define NUMBER_OF_NOTES_IN_A_BAR 32      //1小節での音符の数
-#define TEMPO_ADJUST 9 //length_of_a_bar_timeの取得時に、1024をいい感じにスケール変更するための値
+#define TEMPO_ADJUST (9 + NUMBER_OF_NOTES_IN_A_BAR) //length_of_a_bar_timeの取得時に、1024をいい感じにスケール変更するための値
 
 //////// ピン番号たち ////////
 // input
-#define P_LENGTH_OF_A_BAR_TIME 1  //length_of_a_bar_timeを決めるためのアナログピン番号
-#define P_KICK_BUTTON          5  //kickボタン
-#define P_SNARE_BUTTON         4  //snareボタン
-#define P_HIGHHAT_BUTTON       3  //highhatボタン
-#define P_ROTATE_TRACK_BUTTON  2  //トラックを入れ替えるボタンのピン番号
+#define P_LENGTH_OF_A_NOTE_TIME 1  //length_of_a_bar_timeを決めるためのアナログピン番号
+#define P_KICK_BUTTON           5  //kickボタン
+#define P_SNARE_BUTTON          4  //snareボタン
+#define P_HIGHHAT_BUTTON        3  //highhatボタン
+#define P_PART4_BUTTON          13 //part4ボタン
+#define P_ROTATE_TRACK_BUTTON   2  //トラックを入れ替えるボタンのピン番号
 // output
-#define P_LED_REC              6  //録音モードでオンになるピン番号
-#define P_LED_TEMPO            8  //テンポごとに光らせる
-#define P_LED_NOTE             7  //音符ごとに光らせる
-#define P_POWER_LED_KICK       9  //kickのパワーLEDを光らせるピン番号
-#define P_POWER_LED_SNARE     10  //snareのパワーLEDを光らせるピン番号
-#define P_POWER_LED_HIGHHAT   12  //highhatのパワーLEDを光らせるピン番号
+#define P_LED_REC               6  //録音モードでオンになるピン番号
+#define P_LED_TEMPO             8  //テンポごとに光らせる
+#define P_LED_NOTE              7  //音符ごとに光らせる
+#define P_POWER_LED_KICK        9  //kickのパワーLEDを光らせるピン番号
+#define P_POWER_LED_SNARE      10  //snareのパワーLEDを光らせるピン番号
+#define P_POWER_LED_HIGHHAT    12  //highhatのパワーLEDを光らせるピン番号
 // pin11はfast PWM（信号出力）に使われている
 
 Metro tempo, note;   //テンポ、音符の間隔
 
-unsigned int length_of_a_bar_time; //1小節の時間の長さ（可変）
+unsigned int length_of_a_bar_time, length_of_a_note_time; //1小節の時間の長さ（可変）
 //////// 録音用の変数たち ////////
 int note_phase_int;           //1小節の中で何番目の音符かを示す
 unsigned int t_breset, t_bstart, t_blength; //ボタンカウントのリセット時刻、ボタンを押された長さ測定用の変数
 //////// LEDでのチェック用 ////////
 unsigned int tt, ttb, tn, tnb; //LED点灯時刻、消灯時刻
 //インスタンス生成。引数は、ボタンのピン番号、出力時の音程
-SeqControler kick(P_KICK_BUTTON, 21), snare(P_SNARE_BUTTON, 73), highhat(P_HIGHHAT_BUTTON, 255);
+SeqControler kick(P_KICK_BUTTON, 21), snare(P_SNARE_BUTTON, 73), highhat(P_HIGHHAT_BUTTON, 140), part4(P_PART4_BUTTON, 255);
 // トラックの音符を入れ替える
 void substitute();
 unsigned int s_tb, s_t; //substitute判定のバウンシング対策。millis()を入れる
@@ -84,14 +86,16 @@ void setup() {
   sbi(DDRB,3);
   
   // テンポを設定
-  length_of_a_bar_time = analogRead(P_LENGTH_OF_A_BAR_TIME) / TEMPO_ADJUST * NUMBER_OF_NOTES_IN_A_BAR;
+  length_of_a_note_time = analogRead(P_LENGTH_OF_A_NOTE_TIME) / TEMPO_ADJUST;
+  length_of_a_bar_time = length_of_a_note_time * NUMBER_OF_NOTES_IN_A_BAR;
   tempo = Metro(length_of_a_bar_time);
-  note = Metro(length_of_a_bar_time / NUMBER_OF_NOTES_IN_A_BAR); //length_of_a_bar_time / NUMBER_OF_NOTES_IN_A_BAR = (音符の長さ）
-  
+  note = Metro(length_of_a_note_time);
+
   pinMode(P_KICK_BUTTON, INPUT);
   pinMode(P_SNARE_BUTTON, INPUT);
   pinMode(P_HIGHHAT_BUTTON, INPUT);
   pinMode(P_ROTATE_TRACK_BUTTON, INPUT);
+  pinMode(P_PART4_BUTTON, INPUT);
 
   //for test
   Serial.begin(9600);
@@ -126,11 +130,17 @@ void loop() {
       highhat.Record();              //highhat::録音モードのはじめをtempoに合わせる
       //digitalWrite(P_LED_REC, HIGH); //highhat::録音モードであることを知らせるために光らせる
     }
+    if (part4.m_pmode == 1) {
+      part4.Record();                //part4::録音モードのはじめをtempoに合わせる
+      //digitalWrite(P_LED_REC, HIGH); //part4::録音モードであることを知らせるために光らせる
+    }
     digitalWrite(P_LED_TEMPO, HIGH);
     Serial.println("tempo!");
     tt = millis();  //LED点灯時刻の記録
-    
-    length_of_a_bar_time = analogRead(P_LENGTH_OF_A_BAR_TIME) / TEMPO_ADJUST * NUMBER_OF_NOTES_IN_A_BAR; //length_of_a_bar_timeを変更
+
+    //テンポを変更
+    length_of_a_note_time = analogRead(P_LENGTH_OF_A_NOTE_TIME) / TEMPO_ADJUST;
+    length_of_a_bar_time = length_of_a_note_time * NUMBER_OF_NOTES_IN_A_BAR;
     tempo.interval(length_of_a_bar_time);      //実際のテンポの変更を適用
     note = Metro(length_of_a_bar_time / NUMBER_OF_NOTES_IN_A_BAR); //テンポの変更をnoteにも適用
   }
@@ -229,6 +239,11 @@ void loop() {
     highhat.m_pmode = 1;      //録音モードに切り替える
     Serial.write("record mode highhat on\n");
   }
+  //part4::ボタンを押し始めてから経過した時間がlength_of_a_bar_time以上で、かつ今もボタンが押されているとき、
+  if (part4.m_bstate == 1 && t_blength - t_bstart > length_of_a_bar_time) {
+    part4.m_pmode = 1;      //録音モードに切り替える
+    Serial.write("record mode part4 on\n");
+  }
 
   s_t = millis();
   if (digitalRead(P_ROTATE_TRACK_BUTTON) == HIGH && s_t - s_tb > 100) {
@@ -242,7 +257,8 @@ void substitute() {
   bool temp;
   int j;
   for (j = 0; j < NUMBER_OF_NOTES_IN_A_BAR; j++) { 
-    temp = highhat.m_notes[j];
+    temp = part4.m_notes[j];
+    part4.m_notes[j] = highhat.m_notes[j];
     highhat.m_notes[j] = snare.m_notes[j];
     snare.m_notes[j] = kick.m_notes[j];
     kick.m_notes[j] = temp;
